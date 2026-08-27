@@ -117,3 +117,26 @@ async def health():
         "status":
             "healthy"
     }
+# =========================================================
+# ROOT
+# =========================================================
+
+@app.get("/")
+async def root():
+    return {
+        "service": "AQUORA API",
+        "status": "operational",
+        "version": "1.0.0"
+    }
+
+
+# =========================================================
+# HEALTH
+# =========================================================
+
+@app.get("/health")
+async def health():
+    return {
+        "status": "healthy",
+        "service": "AQUORA API"
+    }
