@@ -35,34 +35,48 @@ app = FastAPI(
 
 # =========================================================
 # CORS
+#
+# AQUORA authentication uses JWT Bearer tokens,
+# not browser cookies.
+#
+# Therefore credentials do not need to be enabled.
+#
+# For this prototype we allow all frontend origins so:
+# - Vercel production works
+# - Vercel preview URLs work
+# - localhost works
+#
+# Production release can later restrict this list.
 # =========================================================
 
 app.add_middleware(
     CORSMiddleware,
 
     allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-
-        # AQUORA production frontend
-        "https://aquora-olive.vercel.app",
+        "*"
     ],
 
-    # Also allows Vercel preview deployment URLs.
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_credentials=False,
 
-    allow_credentials=True,
+    allow_methods=[
+        "*"
+    ],
 
-    allow_methods=["*"],
+    allow_headers=[
+        "*"
+    ],
 
-    allow_headers=["*"],
+    expose_headers=[
+        "*"
+    ],
 )
 
 
 # =========================================================
 # AUTHENTICATION
 #
-# auth.py already contains /api/auth prefix.
+# auth.py already contains:
+# /api/auth
 # =========================================================
 
 app.include_router(
@@ -76,8 +90,12 @@ app.include_router(
 
 app.include_router(
     ocean_router,
+
     prefix="/api/ocean",
-    tags=["Ocean Data"],
+
+    tags=[
+        "Ocean Data"
+    ],
 )
 
 
@@ -87,8 +105,12 @@ app.include_router(
 
 app.include_router(
     reports_router,
+
     prefix="/api/reports",
-    tags=["Reports"],
+
+    tags=[
+        "Reports"
+    ],
 )
 
 
@@ -100,20 +122,28 @@ app.include_router(
 async def root():
 
     return {
-        "service": "AQUORA API",
-        "status": "operational",
-        "version": "1.0.0",
+        "service":
+            "AQUORA API",
+
+        "status":
+            "operational",
+
+        "version":
+            "1.0.0",
     }
 
 
 # =========================================================
-# HEALTH
+# HEALTH CHECK
 # =========================================================
 
 @app.get("/health")
 async def health():
 
     return {
-        "status": "healthy",
-        "service": "AQUORA API",
+        "status":
+            "healthy",
+
+        "service":
+            "AQUORA API",
     }

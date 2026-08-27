@@ -1,6 +1,18 @@
+# =========================================================
+# ARGOVIS NEARBY CACHE
+#
+# Prevent repeated expensive profile searches.
+# Data remains REAL Argovis data.
+# =========================================================
+
+ARGO_NEARBY_CACHE = {}
+
+ARGO_NEARBY_CACHE_TTL = 1800
 from datetime import datetime, timedelta, timezone
 import math
+import time
 
+from copy import deepcopy
 import httpx
 
 
@@ -43,7 +55,7 @@ def haversine_km(
     return radius * c
 
 
-async def get_nearby_argo_profiles(
+async def _fetch_nearby_argo_profiles(
     latitude: float,
     longitude: float,
     radius_km: float = 250,
@@ -220,6 +232,241 @@ async def get_nearby_argo_profiles(
 
     # Keep UI manageable
     return results[:10]
+
+# =========================================================
+# CACHED PUBLIC ARGOVIS NEARBY FUNCTION
+# =========================================================
+
+async def get_nearby_argo_profiles(
+    latitude: float,
+    longitude: float,
+    radius_km: float = 500,
+):
+
+    # -----------------------------------------------------
+    # Use a slightly rounded location as the cache key.
+    #
+    # This prevents tiny coordinate differences from
+    # generating another expensive Argovis search.
+    # -----------------------------------------------------
+
+    cache_key = (
+        round(
+            latitude,
+            2,
+        ),
+
+        round(
+            longitude,
+            2,
+        ),
+
+        round(
+            radius_km,
+        ),
+    )
+
+
+    now = (
+        time.monotonic()
+    )
+
+
+    cached = (
+        ARGO_NEARBY_CACHE.get(
+            cache_key
+        )
+    )
+
+
+    # -----------------------------------------------------
+    # FRESH CACHE
+    # -----------------------------------------------------
+
+    if cached:
+
+        age = (
+            now
+            - cached[
+                "timestamp"
+            ]
+        )
+
+
+        if (
+            age
+            < ARGO_NEARBY_CACHE_TTL
+        ):
+
+            print(
+                "ARGOVIS CACHE HIT:",
+                cache_key,
+                "age:",
+                round(
+                    age,
+                    1,
+                ),
+                "seconds",
+            )
+
+
+            return deepcopy(
+                cached[
+                    "profiles"
+                ]
+            )
+
+
+    # -----------------------------------------------------
+    # NETWORK REQUEST
+    # -----------------------------------------------------
+
+    try:
+
+        profiles = (
+            await _fetch_nearby_argo_profiles(
+                latitude=
+                    latitude,
+
+                longitude=
+                    longitude,
+
+                radius_km=
+                    radius_km,
+            )
+        )
+
+
+        # -------------------------------------------------
+        # CACHE ONLY SUCCESSFUL REAL RESULTS
+        # -------------------------------------------------
+
+        if profiles:
+
+            ARGO_NEARBY_CACHE[
+                cache_key
+            ] = {
+
+                "timestamp":
+                    now,
+
+                "profiles":
+                    deepcopy(
+                        profiles
+                    ),
+            }
+
+
+            print(
+                "ARGOVIS CACHE STORED:",
+                cache_key,
+                "profiles:",
+                len(
+                    profiles
+                ),
+            )
+
+
+        return profiles
+
+
+    except Exception as exc:
+
+        # -------------------------------------------------
+        # ARGOVIS RATE LIMIT
+        #
+        # Existing cached REAL observations are preferred.
+        # -------------------------------------------------
+
+        response = getattr(
+            exc,
+            "response",
+            None,
+        )
+
+
+        status_code = getattr(
+            response,
+            "status_code",
+            None,
+        )
+
+
+        if status_code == 429:
+
+            print(
+                "ARGOVIS RATE LIMIT:"
+                " provider returned 429."
+            )
+
+
+            # ---------------------------------------------
+            # STALE CACHE IS STILL REAL DATA.
+            # Use it rather than failing the whole app.
+            # ---------------------------------------------
+
+            if cached:
+
+                print(
+                    "ARGOVIS:"
+                    " USING EXISTING REAL CACHE"
+                )
+
+
+                return deepcopy(
+                    cached[
+                        "profiles"
+                    ]
+                )
+
+
+            # ---------------------------------------------
+            # No cache available.
+            #
+            # Return an empty result rather than causing
+            # the whole AQUORA endpoint to become 502.
+            # ---------------------------------------------
+
+            print(
+                "ARGOVIS:"
+                " NO CACHE AVAILABLE."
+                " Returning empty profile list."
+            )
+
+
+            return []
+
+
+        # -------------------------------------------------
+        # OTHER ARGOVIS FAILURE
+        # -------------------------------------------------
+
+        print(
+            "ARGOVIS NEARBY ERROR:",
+            repr(
+                exc
+            ),
+        )
+
+
+        if cached:
+
+            print(
+                "ARGOVIS:"
+                " USING REAL CACHE AFTER"
+                " PROVIDER FAILURE."
+            )
+
+
+            return deepcopy(
+                cached[
+                    "profiles"
+                ]
+            )
+
+
+        return []
+
 async def get_argo_profile(
     profile_id: str,
 ):
