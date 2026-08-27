@@ -4015,3 +4015,134 @@ a {
 
   background: transparent;
 }
+/* =========================================================
+   REPORT 3D DEPTH VISUALIZATION
+========================================================= */
+
+.depth3d-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+
+  padding: 18px;
+
+  border: 1px solid #e3ebf3;
+  border-radius: 18px;
+
+  background: #ffffff;
+}
+
+.depth3d-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.depth3d-stat {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f7fbff;
+  border: 1px solid #e2eef8;
+}
+
+.depth3d-stat span {
+  display: block;
+  margin-bottom: 6px;
+
+  color: #6f8298;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.depth3d-stat strong {
+  color: #193a60;
+  font-size: 16px;
+}
+
+.depth3d-visual {
+  width: 100%;
+  overflow-x: auto;
+
+  border-radius: 16px;
+  background: linear-gradient(180deg, #f7fbff 0%, #eef6ff 100%);
+  border: 1px solid #e2edf8;
+}
+
+.depth3d-svg {
+  width: 100%;
+  min-width: 720px;
+  height: auto;
+  display: block;
+}
+
+.depth3d-note {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f8fbfe;
+  border: 1px solid #e4edf6;
+
+  color: #61768d;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.depth3d-table {
+  display: grid;
+  gap: 8px;
+}
+
+.depth3d-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+
+  padding: 10px 12px;
+
+  border-radius: 10px;
+  background: #fbfdff;
+  border: 1px solid #e9f0f6;
+
+  color: #274969;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.depth3d-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  padding: 18px;
+
+  border: 1px dashed #d8e3ee;
+  border-radius: 14px;
+
+  background: #fbfdff;
+}
+
+.depth3d-empty strong {
+  color: #244565;
+  font-size: 15px;
+}
+
+.depth3d-empty span {
+  color: #72859a;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 980px) {
+  .depth3d-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .depth3d-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .depth3d-row {
+    grid-template-columns: 1fr;
+  }
+}
