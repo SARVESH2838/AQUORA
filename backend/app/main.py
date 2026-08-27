@@ -18,7 +18,7 @@ from app.routes.reports import (
 
 
 # =========================================================
-# AQUORA APPLICATION
+# AQUORA API
 # =========================================================
 
 app = FastAPI(
@@ -43,7 +43,13 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+
+        # AQUORA production frontend
+        "https://aquora-olive.vercel.app",
     ],
+
+    # Also allows Vercel preview deployment URLs.
+    allow_origin_regex=r"https://.*\.vercel\.app",
 
     allow_credentials=True,
 
@@ -54,10 +60,9 @@ app.add_middleware(
 
 
 # =========================================================
-# AUTHENTICATION ROUTES
+# AUTHENTICATION
 #
-# auth.py already contains:
-# prefix="/api/auth"
+# auth.py already contains /api/auth prefix.
 # =========================================================
 
 app.include_router(
@@ -66,8 +71,8 @@ app.include_router(
 
 
 # =========================================================
-# OCEAN ROUTES
-#=========================================================
+# OCEAN DATA
+# =========================================================
 
 app.include_router(
     ocean_router,
@@ -77,7 +82,7 @@ app.include_router(
 
 
 # =========================================================
-# REPORT ROUTES
+# REPORTS
 # =========================================================
 
 app.include_router(
@@ -95,38 +100,9 @@ app.include_router(
 async def root():
 
     return {
-        "service":
-            "AQUORA API",
-
-        "status":
-            "operational",
-
-        "version":
-            "1.0.0",
-    }
-
-
-# =========================================================
-# HEALTH
-# =========================================================
-
-@app.get("/health")
-async def health():
-
-    return {
-        "status":
-            "healthy"
-    }
-# =========================================================
-# ROOT
-# =========================================================
-
-@app.get("/")
-async def root():
-    return {
         "service": "AQUORA API",
         "status": "operational",
-        "version": "1.0.0"
+        "version": "1.0.0",
     }
 
 
@@ -136,7 +112,8 @@ async def root():
 
 @app.get("/health")
 async def health():
+
     return {
         "status": "healthy",
-        "service": "AQUORA API"
+        "service": "AQUORA API",
     }
