@@ -2,7 +2,9 @@
    AQUORA API SERVICE
    frontend/src/services/oceanApi.ts
 ========================================================= */
-
+const AQUORA_API =
+  import.meta.env.VITE_API_BASE ||
+  "http://127.0.0.1:8000";
 
 /* =========================================================
    API CONFIGURATION
