@@ -26,7 +26,6 @@ function GlobeMap({
   onLocationSelect,
 
   argoProfiles,
-  selectedArgo,
   onArgoSelect,
 }: GlobeMapProps) {
   const mapContainer = useRef<HTMLDivElement | null>(null);
@@ -89,7 +88,6 @@ function GlobeMap({
 
       bearing: 0,
 
-      attributionControl: true,
     });
 
     mapRef.current = map;
